@@ -1,0 +1,11 @@
+---
+cassandra_cluster_name: "TEST1 Cluster" 
+cassandra_port: 9042
+cassandra_work_dir: /d01/cassandra
+cassandra_conf_dir: /etc/cassandra
+cassandra_username: cassandra
+cassandra_password: Pppp1
+XMS: 2G
+XMX: 2G
+cassandra_seeds: "127.0.0.1"
+

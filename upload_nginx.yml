@@ -1,0 +1,29 @@
+- name: Update UI
+  hosts: nginx
+  gather_facts: false
+  become: true
+  vars:
+    web_dir: "/usr/share/nginx/html/" 
+  tasks:
+    - name: Check Block {{ portal_type }} defined
+      block:
+        - name: Stop nginx
+          ansible.builtin.service: name="nginx" state="stopped"
+        - name: Delete html directory
+          ansible.builtin.file: 
+            path: "{{ web_dir }}"
+            state: "{{ item }}"
+            owner: root
+            group: root
+            mode: 0755
+          loop:
+            - absent
+            - directory
+        - name: Upload "{{ nginx }}"
+          ansible.builtin.unarchive:
+            src: "{{ release_dir }}/{{ portal_type }}-ui.tgz"
+            dest: "{{ web_dir }}"
+            remote_src: true
+        - name: Start nginx
+          ansible.builtin.service: name="nginx" state="started"
+      when: portal_type is defined    

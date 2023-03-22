@@ -1,0 +1,24 @@
+- name: Test prod-dev
+  hosts: localhost
+  tasks:
+    - name: Print test vars
+      ansible.builtin.debug: msg="{{ test }}"
+    - name: Print host file
+      ansible.builtin.debug: msg="{{ item }} === {{ hostvars[item].ansible_host }}"
+      when: hostvars[item].ansible_host is defined
+      loop: "{{ groups['all'] }}"
+    - name: Inventory to hosts
+      ansible.builtin.lineinfile:
+        dest: hosts
+        regexp: '.*{{ item }}$'
+        line: "{{ hostvars[item].ansible_host }} {{ item }}"
+        state: present
+      when: hostvars[item].ansible_host is defined
+      loop: "{{ groups['all'] }}"
+    - name: To_hosts variable to hosts file
+      ansible.builtin.lineinfile:
+        dest: hosts
+        regexp: "{{ item }}"
+        line: "{{ item }}"
+        state: present
+      loop: "{{ to_hosts }}"

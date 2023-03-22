@@ -1,0 +1,29 @@
+  location / {
+      rewrite ^(.*)$ /outer permanent;
+  }
+  location = /outer {
+      rewrite ^(.*)$ /outer/ permanent;
+  }
+  location ~ /outer/outer {
+      return 404;
+      # Блокировка зацикливаний
+  }
+  location /wap-outer {
+      # Статика в root
+  }
+  location  /external-gateway {
+      proxy_pass http://servers_apps;
+      proxy_set_header Host $http_host;
+
+      proxy_http_version 1.1;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Upgrade $http_upgrade;
+  }
+  location  /integration-gateway {
+      proxy_pass http://servers_apps;
+      proxy_set_header Host $http_host;
+
+      proxy_http_version 1.1;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Upgrade $http_upgrade;
+  }

@@ -1,0 +1,13 @@
+[Unit]
+Requires=zookeeper.service
+After=zookeeper.service
+[Service]
+Type=simple
+User=kafka
+Environment="KAFKA_HEAP_OPTS=-Xms{{ kXMS }} -Xmx{{ kXMX }}"
+Environment="KAFKA_OPTS=-Djava.security.auth.login.config=/etc/kafka/kafka_jaas.conf"
+ExecStart=/bin/sh -c "/d01/kafka/bin/kafka-server-start.sh /d01/kafka/config/server.properties > /d01/kafka/kafka.log 2>&1"
+ExecStop=/d01/kafka/bin/kafka-server-stop.sh
+Restart=on-abnormal
+[Install]
+WantedBy=multi-user.target

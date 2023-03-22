@@ -1,0 +1,27 @@
+photo_urls:
+  - photo.home.local
+  - photo-int.home.local
+chatbot_urls:
+  - chatb.home.local
+  - chatb-int.home.local
+upstreams:
+  - name: servers_int
+    servers:
+      - test-app01:8080
+  - name: servers_back
+    servers:
+      - test-app01:8080
+  - name: servers_ext
+    servers:
+      - test-app2:8080
+  - name: servers_chatbot
+    servers:
+      - test-pyt1:8000
+  - name: servers_photo
+    servers:
+      - test-photo:6000
+redirects:
+  - path: /inner-gateway/iner/
+    url: http://iner.home.local:8090 
+  - path: /inner-gateway/common/
+    url: http://127.0.0.1:8095/common/ 

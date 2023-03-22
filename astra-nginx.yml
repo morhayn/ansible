@@ -1,0 +1,27 @@
+- name: Install nginx
+  hosts: nginx
+  become: true
+  vars:
+    nginx_package:
+      - nginx.deb
+  tasks:
+    - name: Gether package facts
+      ansible.builtin.package_facts:
+        manager: apt
+    - name: Group to vars tomcat instance
+      ansible.builtin.set_fact:
+        wars: "{{ mods | default([]) + [{ 'host': item, 'instance': hostvars[item].instance }] }}"
+      loop: "{{ groups[group_tomcat] }}"
+    - name: Rebuild array to config nginx
+      ansible.builtin.set_fact:
+        wap_nginx: "{{ mods | filtermod }}"
+    - name: Install cassandra
+      vars:
+        packages_dir: "{{ remote_packages_dir }}/nginx"
+      ansible.builtin.include_tasks: tasks/copy_install_deb.yml
+      when: item.split("_")[0] not in ansible_facts.packages
+      loop: "{{ nginx_package }}"
+      
+    - name: configurate nginx
+      ansible.builtin.include_role:
+        name: astra-nginx

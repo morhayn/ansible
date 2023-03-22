@@ -1,0 +1,16 @@
+- name: Add servers to remmina
+  hosts: localhost
+  vars:
+    username: user
+  vars_files:
+    "/home/{{ username }}/remmina/hosts"
+  tasks:
+    - name: copy template
+      ansible.builtin.template:
+        src: "template/riemmina.j2"
+        dest: "/home/{{ username }}/.local/share/remmina/group_ssh_{{ item.host_name }}_{{ item.string_ip }}.remmina"
+        mode: 0644
+        owner: "{{ username }}"
+        group: "{{ username }}"
+      loop: "{{ hosts }}"
+

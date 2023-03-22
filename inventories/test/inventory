@@ -1,0 +1,14 @@
+[local]
+localhost     ansible_connection=local ansible_python_interpreter=/usr/bin/python3
+astra    ansible_port=2222 ansible_user=vagrant
+alma_test1     ansible_port=2288 ansible_user=user add_name="['pc.home.local', 'ff.home.local']"
+alma_test2      ansible_port=2299 ansible_user=user
+
+[tomcat]
+astra
+
+[test1]
+localhost
+
+[test2]
+localhost

@@ -1,0 +1,52 @@
+---
+- name: Stop Tomcat service
+  ansible.builtin.service: name="{{ inst.tomcat_service_name }}" state=stopped
+- name: Check Backup manager directory
+  ansible.builtin.copy:
+    src: "{{ inst.catalina_home }}/webapps/manager"
+    dest: "{{ inst.catalina_home }}/"
+    owner: tomcat
+    group: tomcat
+    mode: 0750
+    remote_src: true
+- name: Recreate old Dirs and Logs
+  block:
+    - name: Remove old dir {{ update_dirs }}
+      ansible.builtin.file: path="{{ inst.catalina_home }}/{{ item }}" state=absent
+      loop: "{{ update_dirs }}"
+    - name: Create new dirs {{ update_dirs }}
+      ansible.builtin.file: path="{{ inst.catalina_home }}/{{ item }}" state=directory owner=tomcat group=tomcat mode=0750
+      loop: "{{ update_dirs }}"
+  when: inst.catalina_home.find('/d01/tomcat') != -1
+- name: Check Restore manager directory
+  ansible.builtin.copy:
+    src: "{{ inst.catalina_home }}/manager"
+    dest: "{{ inst.catalina_home }}/webapps/"
+    owner: tomcat
+    group: tomcat
+    mode: 0750
+    remote_src: true
+- name: Debug
+  ansible.builtin.debug: msg="{{ inst }}"
+- name: Install modules remote
+  ansible.builtin.copy:
+    src: "{{ release_dir }}/{{ item }}"
+    dest: "{{ inst.catalina_home }}/webapps/"
+    owner: tomcat
+    group: tomcat
+    mode: 0750
+  loop: "{{ inst.mods }}"
+  when: not nfs_copy|bool
+- name: Install modules local
+  ansible.builtin.copy:
+    src: "{{ release_dir }}/{{ item }}"
+    dest: "{{ inst.catalina_home }}/webapps/"
+    owner: tomcat
+    group: tomcat
+    mode: 0750
+    remote_src: true
+  loop: "{{ inst.mods }}"
+  when: nfs_copy|bool
+- name: Start Tomcat service
+  ansible.builtin.service: name="{{ inst.tomcat_service_name }}" state=started
+  when: tomcat_start | bool

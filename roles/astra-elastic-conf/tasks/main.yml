@@ -1,0 +1,23 @@
+---
+- name: Create Dirs
+  ansible.builtin.file:
+    path: "{{ elastic_data_dir }}"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: 0755
+- name: Copy Templates
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ elastc_conf_dir} }/{{ item.dest }}"
+    owner: root
+    group: elasticsearch
+    mode: 0660
+  loop:
+    - { src: elasticsearch.yml.j2, dest: elasticsearch.yml }
+    - { src: jvm.options.j2, dest: jvm.options }
+- name: Run and enable
+  ansible.builtin.service:
+    name: elasticsearch
+    enabled: true
+    state: started

@@ -1,0 +1,28 @@
+---
+- name: Check directory for packages
+  ansible.builtin.file:
+    path: "{{ local_packages_dir }}"
+    state: directory
+- name: copy to host
+  ansible.builtin.copy:
+    src: "telegraf_1.24.3-1_amd64.deb"
+    dest: "{{ local_packages_dir }}"
+    mode: 0644
+    owner: root
+- name: Install telegraf
+  ansible.builtin.apt:
+    deb: "{{ local_packages_dir }}/telegraf_1.24.3-1_amd64.deb"
+    state: present
+- name: Configure telegraf
+  ansible.builtin.template:
+    src: telegraf.conf.j2
+    dest: /etc/telegraf/telegraf.conf
+    mode: 0644
+    owner: telegraf
+    group: telegraf
+- name: add telegraf to group tomcat
+- name: Enable and start
+  ansible.builtin.service:
+    name: telegraf
+    enabled: true
+    state: restarted

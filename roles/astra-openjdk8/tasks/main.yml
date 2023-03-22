@@ -1,0 +1,8 @@
+---
+- name: Gether package facts
+  ansible.builtin.package_facts:
+    manager: apt
+- name: Install openjdk
+  include_tasks: copy_install_deb.yml
+  when: item.split("_")[0] not in ansible_facts.packages 
+  loop: "{{ openjdk_files }}"

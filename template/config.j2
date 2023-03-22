@@ -1,0 +1,34 @@
+url_list:
+hosts:
+{% for host in groups['all'] %}
+{% if host != 'localhost' and hostvars[host].ansible_host is defined %}
+  - name: "{{ host }}"
+    ip: "{{ hostvars[host].ansible_host }}"
+    list_ports:
+      - "22"
+{% if hostvars[host].instance is defined %}{% for inst in hostvars[host].instance %}
+{% if inst.tomcat_port is defined %}
+      - "{{ inst.tomcat_port }}"
+{% endif %}
+{% endfor %}{% endif %}
+{% if hostvars[host].portal_type is defined %}
+      - "80"
+      - "443"
+{% endif %}
+    list_service:
+{% if hostvars[host].instance is defined %}{% for inst in hostvars[host].instance %}
+{% if inst.tomcat_service_name is defined %}
+      - "{{ inst.tomcat_service_name }}"
+      - "Tomcat:user:pass:{{ inst.tomcat_port }}"
+{% endif %}
+{% endfor %}{% endif %}
+{% if hostvars[host].portal_type is defined %}
+      - "nginx"
+{% endif %}
+    wars:
+{% if hostvars[host].instance is defined %}{% for inst in hostvars[host].instance %}
+{% if inst.wars is defined and inst.wars is iterable %}{% for war in inst.wars %}
+     - "{{ war }}"
+{% endfor %}{% endif %}{% endfor %}{% endif %}
+{% endif %}
+{% endfor %}

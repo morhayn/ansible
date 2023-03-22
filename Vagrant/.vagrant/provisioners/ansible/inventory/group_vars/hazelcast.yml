@@ -1,0 +1,12 @@
+XMX: 128m
+XMS: 2g
+hazel_instance:
+  - name: hazelcast
+    hazelcast_dir: hk
+    hazelcast_log_dir: /var/log/hazelcast_cb
+    hazelcast_user: hazel
+    hazelcats_pass: passw
+    hazelcast_port: 5702
+    hazelcast_wap_members: "{{ ansible_hostname }}:5702" 
+    hazelcast_client_attempt_limit: 100 
+    hazelcast_client_attempt_period: 10000 

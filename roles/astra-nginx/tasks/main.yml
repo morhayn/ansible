@@ -1,0 +1,38 @@
+---
+# tasks file for nginx
+- name: Check or create directory
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d
+    state: directory
+    owner: root
+    group: root
+- name: Copy templates inner
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/nginx/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0664
+  loop:
+    - { src: nginx.conf.j2, dest: nginx.conf }
+  when: portal_type == "inner"
+- name: Copy templates outer
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/nginx/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0664
+  loop:
+    - { src: nginx.conf.j2, dest: nginx.conf }
+    - { src: "outer/default.conf.j2", dest: conf.d/default.conf }
+    - { src: "outer/ext.conf.j2", dest: conf.d/ext.conf }
+    - { src: "outer/ext_ssl.conf.j2", dest: conf.d/ext_ssl.conf }
+    - { src: "outer/ext_common.locations.j2", dest: conf.d/ext_common.locations }
+    - { src: "outer/redirects_ext.locations.j2", dest: conf.d/redirects_ext.locations }
+  when: portal_type == "outer"
+- name: Enabled nginx
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started

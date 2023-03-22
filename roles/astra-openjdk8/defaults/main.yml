@@ -1,0 +1,10 @@
+---
+openjdk_files:
+  - openjdk-8-jre-headless_8u302-b08-1~deb9u1_amd64.deb
+  - openjdk-8-dbg_8u302-b08-1~deb9u1_amd64.deb
+  - openjdk-8-jdk-headless_8u302-b08-1~deb9u1_amd64.deb
+  - openjdk-8-jre_8u302-b08-1~deb9u1_amd64.deb
+  - openjdk-8-jdk_8u302-b08-1~deb9u1_amd64.deb
+packages_dir: "/d01/nfs/common/packages/openjdk8" 
+local_packages_dir: "/d01/packages"
+# defaults file for astra-openjdk8

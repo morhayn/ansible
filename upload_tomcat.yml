@@ -1,0 +1,20 @@
+- name: Tomcat Reload
+  hosts: tomcat
+  gather_facts: false
+  become: true
+  vars:
+    update_dirs: ['webapps', 'work'] 
+    clear_logs: false 
+    tomcat_start: true 
+  tasks:
+    - name: Debug
+      ansible.builtin.debug: msg="{{ release_dir }}"
+    - name: Set update_dir when logs clear
+      ansible.builtin.set_fact:
+        update_dir: "{{ update_dir + ['logs'] }}"
+      when: clear_logs
+    - name: Loop in instance tomcat
+      include_tasks: "tasks/upload_tomcat_in.yml"
+      loop: "{{ instance }}"
+      loop_control:
+        loop_var: inst

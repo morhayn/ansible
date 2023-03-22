@@ -1,0 +1,5 @@
+- name: Install telegraf
+  hosts: telefgaf
+  become: yes
+  roles:
+    - astra-telegraf

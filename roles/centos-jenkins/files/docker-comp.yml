@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  nginx:
+    image: nginx:latest
+    environment:
+      - TZ="Europe/Moscow"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /d01/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /var/log/nginx:/var/log/nginx
+    depends_on:
+      - jenkins
+      - nexus
+  jenkins:
+    image: jenkins/jenkins:lts-jdk11
+    environment:
+      - TZ="Europe/Moscow"
+      - JENKINS_OPTS="--prefix=/jenkins"
+    hostname: jenkins
+    volumes:
+      - /d01/jenkins:/var/jenkins_home
+      - /var/log/jenkins:/var/log/jenkins

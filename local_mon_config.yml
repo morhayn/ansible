@@ -1,0 +1,10 @@
+- name: Create config file diaginfra from inventory
+  hosts: localhost
+  become: false
+  tasks:
+  - name: Check or create direcory conf
+    ansible.builtin.file: path="~/conf" state="directory"
+  - name: Create config file
+    ansible.builtin.template:
+      src: 'template/config.j2'
+      dest: ~/conf/config.yaml

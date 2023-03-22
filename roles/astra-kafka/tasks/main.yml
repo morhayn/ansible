@@ -1,0 +1,58 @@
+---
+- name: Create Directory /d01/kafka /etc/kafka
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: kafka
+    group: kafka
+    mode: 0750
+  loop:
+    - "/d01/kafka"
+    - "/etc/kafka"
+    - "/d01/zookeeper-logs"
+    - "/d01/kafka-logs"
+- name: Unarchive Kafka
+  ansible.builtin.unarchive:
+    src: kafka_2.13-2.8.1.tgz
+    dest: /d01/kafka
+    owner: kafka
+    group: kafka
+    extra_opts: [--strip-components=1]
+- name: Copy Template to /d01/kafka/config
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/d01/kafka/config/{{ item.dest }}"
+    owner: kafka
+    group: kafka
+    mode: 0640
+  loop:
+    - { src: server.properties.j2, dest: server.properties }
+    - { src: zookeeper.properties.j2, dest: zookeeper.properties }
+- name: Copy Template to /etc/kafka
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/kafka/{{ item.dest }}"
+    owner: kafka
+    group: kafka
+    mode: 0640
+  loop:
+    - { src: kafka_jaas.conf.j2, dest: kafka_jaas.conf }
+    - { src: zookeeper_jaas.conf.j2, dest: zookeeper_jaas.conf }
+- name: Copy Service Template to /etc/systemd/system
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/systemd/system/{{ item.dest }}"
+    owner: kafka
+    group: kafka
+    mode: 0644
+  loop:
+    - { src: kafka.service.j2, dest: kafka.service }
+    - { src: zookeeper.service.j2, dest: zookeeper.service }
+- name: Enable and run service
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - zookeeper
+    - kafka

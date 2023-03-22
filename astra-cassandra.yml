@@ -1,0 +1,28 @@
+- name: Configure cassandra
+  hosts: cassandra
+  become: true
+  become_user: root
+  become_method: sudo
+  vars:
+    cassandra_package:
+      - cassandra.deb
+      - cassandra-tools.deb
+  tasks:
+    - name: Gether installed deb packages on serer
+      ansible.builtin.package_facts:
+        manager: apt
+    - name: Install openjdk
+      vars:
+        packages_dir: "{{ remote_packages_dir }}/openjdk8"
+      ansible.builtin.include_role:
+        name: astra-openjdk8
+    - name: Install cassandra if it not installed
+      vars:
+        packages_dir: "{{ remote_packages_dir }}/cassandra/3.11"
+      ansible.builtin.include_tasks: tasks/copy_install_deb.yml
+      when: item.split("_")[0] not in ansible_facts.packages
+      loop: "{{ cassandra_package }}"
+      
+    - name: Configure cassandra. Copy config file and create directorines for base
+      ansible.builtin.include_role:
+        name: astra-cassandra-config

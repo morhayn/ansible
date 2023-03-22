@@ -1,0 +1,6 @@
+cluster.name: {{ elastic_cluster_name}} # test1-Cluster
+node.name: {{ inventory_hostname }} # test1-elk01
+path.data:  {{ elastic_data_dir }} #/data/elasticsearch
+path.logs: /var/log/elasticsearch
+network.host: 0.0.0.0
+http.port: {{ elastic_port }} # 9200

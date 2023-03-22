@@ -1,0 +1,27 @@
+- name: Install single elastic node
+  hosts: elastic
+  become: true
+  become_user: root
+  become_method: sudo
+  vars:
+    elastic_package:
+      - elasticsearch.deb
+  tasks:
+    - name: Gether package installed on server
+      ansible.builtin.package_facts:
+        manager: apt
+    - name: Install openjdk
+      vars:
+        packages_dir: "{{ remote_packages_dir }}/openjdk8/"
+      ansible.builtin.include_role:
+        name: astra-openjdk8
+    - name: Install elasticsearch
+      vars:
+        packages_dir: "{{ remote_packages_dir }}/elastic/"
+      ansible.builtin.include_tasks: tasks/copy_install_deb.yml
+      when: item.split("_")[0] not in ansible_facts.packages
+      loop: "{{ elastic_package }}"
+        
+    - name: Configure elastic
+      ansible.builtin.include_role:
+        name: astra-elastic-conf

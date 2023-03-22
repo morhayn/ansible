@@ -1,0 +1,28 @@
+---
+local_packages_dir: "/d01/packages/"
+nginx: inner
+instance:
+  - instance_uniq_name: test1-tomcat
+    java_opts: >
+        -server
+        -Djava.awt.headless=true
+        -Dfile.encoding=UTF-8
+        -Xms1g
+        -Xmx6g
+        -Djava.net.preferIPv4Stack=true
+        -Djava.net.preferIPv4Addresses=true
+        -Djava.security.egd=file:/dev/./urandom
+        -Dcom.datastax.driver.USE_NATIVE_CLOCK=true
+    jmx_port: 12011
+    jmx_rmi_port: 12012
+    catalina_home: /d01/tomcat/tomcat
+    tomcat_port: 8081
+    tomcat_shutdown_port: 8015
+    tomcat_max_threads: 1000
+    tomcat_service_name: tomcat
+    module: portal
+mods:
+  - captcha.war
+  - file.war
+  - org.war
+  - personal.war

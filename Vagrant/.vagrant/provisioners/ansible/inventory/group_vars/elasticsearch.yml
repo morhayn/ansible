@@ -1,0 +1,9 @@
+---
+elastic_node_name: node1
+elastic_cluster_name: cluster1
+elastic_data_dir: /d01/elasticsearch
+elastic_conf_dir: /etc/elasticsearch
+elastic_port: 9200
+elasticsearchuser: "elasticsearch"
+XMX: 1g
+XMS: 1g

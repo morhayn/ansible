@@ -1,0 +1,23 @@
+- name: Install kafka
+  hosts: kafka
+  become: true
+  tasks:
+    - name: Gether package facts
+      ansible.builtin.package_facts:
+        manager: apt
+    - name: Install openjdk
+      vars:
+        packages_dir: "{{ remote_packages_dir }}/openjdk8/"
+      ansible.builtin.include_role:
+        name: astra-openjdk8
+    - name: Crete user Kafka
+      ansible.builtin.user:
+        name: kafka
+        shell: /sbin/nologin
+        append: true
+        state: present
+        
+    - name: Install kafka
+      ansible.builtin.include_role:
+        name: astra-kafka
+    

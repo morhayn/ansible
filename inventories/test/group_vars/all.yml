@@ -1,0 +1,20 @@
+---
+sources_list: |
+   deb ftp://127.0.0.1/main smolensk main contrib non-free
+   deb ftp://127.0.0.1/devel smolensk main contrib non-free
+   deb ftp://127.0.0.1/update smolensk main contrib non-free
+   deb ftp://127.0.0.1/update-devel smolensk main contrib non-free
+resolv_conf: |
+  nameserver 127.0.0.1
+domain_project: test.local
+packages_dir: "/d01/nfs/common/packages"
+tomcat_package: "apache-tomcat"
+
+java_home_elbrus: /usr/lib/jvm/java-8-openjdk-e2k
+development_mode: true 
+spring_jmx_enabled: false
+tomcat_max_threads: 1000
+tomcat_common_conf_dir: /etc/tomcat
+release_dir_common: /d01/nfs/common/releases
+
+ntp_server: 127.0.0.1

@@ -1,0 +1,146 @@
+---
+- name: Check sshd enable
+  ansible.builtin.systemd: name="ssh" enabled=true
+- name: Check status PARSEC
+  ansible.builtin.shell: cat /proc/cmdline | grep parsec | wc -l
+  changed_when: false
+  register: parsec
+- name: Disable PARSEC
+  block:
+    - name: Disable MIC CONTROL astra parsec
+      ansible.builtin.command: astra-mic-control disable
+    - name: Pdpl-user 63 -> 0
+      ansible.builtin.command: pdpl-user -i 0 "{{ ansible_user }}"
+    - name: Reboot syaytem
+      ansible.builtin.reboot:
+  when: parsec.stdout != "0"
+- name: Inventory to hosts
+  ansible.builtin.blockinfile:
+    dest: /etc/hosts
+    content: "{{ lookup('template', 'hosts.j2') }}"
+    state: present
+- name: Check journal directory
+  ansible.builtin.stat: path=/var/log/journal
+  register: journal
+- name: Create directory for journald
+  block:
+    - name: Create directory for journald
+      ansible.builtin.file: path=/var/log/journal state=directory mode='0770'
+    - name: Init jornald directory
+      ansible.builtin.command: systemd-tmpfiles --create --prefix /var/log/journal
+      args:
+        removes: /var/log/journal
+    - name: Replace max jornald
+      ansible.builtin.lineinfile:
+        path: /etc/systemd/journald.conf
+        regexp: "{{ item.reg }}"
+        line: "{{ item.line }}"
+        state: present
+      loop:
+        - { reg: "#*SystemMaxUse.*", line: "SystemMaxUse=100M"}
+        - { reg: "#*SystemKeepFree.*", line: "SystemKeepFree=200M"}
+      notify:
+        - Restart journald
+  when: not journal.stat.exists
+- name: Sshd configure
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.reg }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { reg: "^#*PasswordAuthentication.*", line: "PasswordAuthentication yes"}
+    - { reg: "^#*PermitRootLogin.*", line: "PermitRootLogin no"}
+  notify:
+    - Restart ssh
+- name: Not kill process after logout
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/logind.conf
+    regexp: "{{ item.reg }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { reg: "^#*KillUserProcesses.*", line: "KillUserProcesses=no"}
+  notify:
+    - Restart logind
+- name: Add vim mose copy
+  ansible.builtin.blockinfile:
+    path: "{{ item }}"
+    block: "{{ lookup('ansible.builtin.file', 'vim.config') }}"
+    marker: "\" {mark} Ansible - block"
+  loop:
+    - /etc/vim/vimrc
+    - /etc/vim/vimrc.tiny
+- name: Copy sysctl propertis
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  loop:
+    - { src: sysctl.conf, dest: /etc/sysctl.d/10-custom.conf }
+    - { src: limits.conf, dest: /etc/security/limits.d/99-limits-custom.conf }
+- name: Configure NTP
+  block:
+    - name: Remove time server for ntp
+      ansible.builtin.lineinfile:
+        path: /etc/ntp.conf
+        regexp: "^pool .*"
+        state: absent
+    - name: Add time server rosgvard
+      ansible.builtin.lineinfile:
+        path: /etc/ntp.conf
+        regexp: "{{ ntp_pool }}"
+        line: "{{ ntp_pool }}"
+        state: present
+      notify:
+        - Restart ntp
+  when: ntp_pool is defined
+- name: Configurate Repository
+  block:
+    - name: Copy sources.list
+      ansible.builtin.copy: src='/etc/apt/sources.list' dest='/etc/apt/sources.list_astra' mode='0644' remote_src='true'
+    - name: Copy content to source.list
+      ansible.builtin.copy:
+        content: "{{ sources_list }}"
+        dest: /etc/apt/sources.list
+        mode: '0644'
+  when: sources_list is defined
+- name: Resolv config
+  ansible.builtin.copy:
+    content: "{{ resolv_conf }}"
+    dest: /etc/resolv.conf
+    mode: 0644
+  when: resolv_conf is defined
+- name: Copy bashrc to root and /etc/skel
+  ansible.builtin.copy: src="{{ item.file }}" dest="{{ item.dest }}/.bashrc" mode="0644"
+  loop:
+    - { file: astra_bashrc_user, dest: /etc/skel }
+    - { file: astra_bashrc_root, dest: /root }
+- name: Install base and fonts
+  ansible.builtin.copy:
+    src: "fonts/{{ item }}"
+    dest: /usr/share/fonts/truetype/
+    mode: '0644'
+  loop: "{{ fonts_dirs }}"
+  become: true
+- name: Install base packages
+  ansible.builtin.apt: name="{{ item }}" state=present
+  loop: "{{ packages }}"
+- name: Create directory for deb packages
+  ansible.builtin.file: path="{{ item }}" state=directory mode="0755"
+  loop:
+    - "{{ nfs_dir }}"
+    - "{{ remote_package_dir }}/admin"
+- name: Copy deb packages
+  ansible.builtin.copy:
+    src: "admin/{{ item }}"
+    dest: "{{ remote_package_dir }}/admin/{{ item }}"
+    mode: '0644'
+  loop: "{{ admin_packages }}"
+- name: Install deb packages {{ remote_package_dir }}/admin
+  ansible.builtin.apt: deb="{{ remote_package_dir }}/admin/{{ item }}"
+  loop: "{{ admin_packages }}"
+- name: Check locale
+  ansible.builtin.lineinfile: path="/etc/locale.gen" line="en_US.UTF-8 UTF-8" state="present"
+  notify:
+    - Restart locale

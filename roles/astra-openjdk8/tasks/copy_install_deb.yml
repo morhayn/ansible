@@ -1,0 +1,19 @@
+---
+- name: Check {{ local_packages_dir }}
+  ansible.builtin.file:
+    path: "{{ local_packages_dir }}"
+    mode: "0755"
+    state: directory
+- name: Copy to package dir
+  ansible.builtin.copy:
+    src: "{{ packages_dir }}/{{ item }}"
+    dest: "{{ local_packages_dir }}"
+    mode: 0664
+- name: Install deb packages
+  ansible.builtin.apt:
+    deb: "{{ local_packages_dir }}/{{ item }}"
+    state: present
+- name: Remove local file
+  ansible.builtin.file:
+    path: "{{ local_packages_dir }}/{{ item }}"
+    state: absent

@@ -1,0 +1,48 @@
+user nginx;
+worker_processes 8;
+error_log /var/log/nginx/error.log warn;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 10240;
+}
+
+worker_rlimit_nofile 80000;
+
+http {
+    log_format  main '$time_iso8601 $status $request_time $server_port $remote_addr $upstream_addr $host $request';
+    log_format  ssl  '$time_iso8601 $status $request_time $server_port $remote_addr $upstream_addr $ssl_protocol/$ssl_cipher $host $request';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+    client_max_body_size 50m;
+    server_tokens off;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    include /etc/nginx/conf.d/*.conf;
+
+{% for mod in mod_nginx %}
+    upstream {{ mod.upstream }} {
+      least_conn;
+{% for server in mod.servers %}
+      server {{ server }} max_fails=2 fail_timeout=30s;
+{% endfor %}
+    }
+{% endfor %}
+
+{% for up in upstreams %}
+    upstream {{ up.name }} {
+      least_conn;
+{% for server in up.servers %}
+      server {{ server }} max_fails=2 fail_timeout=30s;
+{% endfor %}
+    }
+{% endfor %}
+    

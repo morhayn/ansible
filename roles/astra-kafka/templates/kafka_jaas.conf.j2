@@ -1,0 +1,12 @@
+sasl_plaintext.KafkaServer {
+org.apache.kafka.common.security.plain.PlainLoginModule required
+username="{{ kafka_username }}"
+password="{{ kafka_password }}"
+user_{{ kafka_username }}="{{ kafka_password }}"
+user_{{ kafka_test_username }}={{ kafka_test_password }};
+};
+Client {
+org.apache.zookeeper.server.auth.DigestLoginModule required
+username="{{ zoo_username }}"
+password="{{ zoo_password }}";
+}; 

@@ -1,0 +1,28 @@
+[global_tags]
+[agent]
+  interval = "10s"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "0s"
+  flush_interval = "10s"
+  flush_jitter = "0s"
+  precision = "0s"
+  hostname = "{{ inventory_hostname }}"
+  omit_hostname = false
+[[inputs.tail]]
+  files = [ {% for war in instance[0].wars %}"/d01/tomcat/tomcat1/logs/{{ war | regex_replace('\.war$', '.json.log') }}",
+  {% endfor %} ]
+  from_beginning = false
+  data_format = "json"
+  json_name_key = "name"
+  tag_keys = ["level", "moduleName"]
+  json_string_fields = ["message", "stack_trace"]
+  json_time_key = "timestamp"
+  json_time_format = "2006-01-02T15:04:05"
+[[outputs.influxdb_v2]]
+  urls = ["{{ influx }}"]
+  timeout = "8s"
+  organization = "fpko"
+  bucket = "wap-log"
+  token = "{{ token }}"

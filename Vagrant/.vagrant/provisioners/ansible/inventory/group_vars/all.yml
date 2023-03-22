@@ -1,0 +1,14 @@
+---
+remote_packages_dir: /d01/nfs/common/packages
+local_packages_dir: "/d01/templ"
+sources_list: |
+   deb ftp://127.0.0.1/main smolensk main contrib non-free
+   deb ftp://127.0.0.1/devel smolensk main contrib non-free
+   deb ftp://127.0.0.1/update smolensk main contrib non-free
+   deb ftp://127.0.0.1/update-devel smolensk main contrib non-free
+resolv_conf: |
+  nameserver 127.0.0.1
+ntp_server: 127.0.0.1
+domain_project: home.local
+development_mode: true 
+tomcat_max_threads: 100

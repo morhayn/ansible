@@ -1,0 +1,17 @@
+# the directory where the snapshot is stored.
+dataDir=/d01/zookeeper-logs
+# the port at which the clients will connect
+clientPort=2181
+# setting number of connections to unlimited
+maxClientCnxns=0
+# keeps a hearbeat of zookeeper in milliseconds
+tickTime=2000
+# time for inital synchronization
+initLimit=10
+# how many ticks can pass before timeout
+syncLimit=5
+# define servers ip and internal ports to zookeeper
+######### Config for cluster
+#server.1=zookeeper1:2888:3888                               #For cluster
+#server.2=zookeeper2:2888:3888                               #For cluster
+#server.3=zookeeper3:2888:3888                               #For cluster 

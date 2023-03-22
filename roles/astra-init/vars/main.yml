@@ -1,0 +1,43 @@
+---
+# vars file for template
+fonts_dirs:
+  - XOThames
+packages:
+  - vim
+  - mc
+  - wget
+  - curl
+  - tcpdump
+  - mlocate
+  - xz-utils
+  - bzip2
+  - tar
+  - gdisk
+  - htop
+  - rsync
+  - nfs-common
+  - iftop
+  - iotop
+  - telnet
+  - iperf
+  - nano
+  - traceroute
+  - iputils-tracepath
+  - p7zip
+  - unzip
+  - lvm2
+  - dnsutils
+  - nmap
+  - libutempter0
+  - fontconfig
+  - locales-all
+  - screen
+  - binutils
+  - python3-venv
+  - nfs-kernel-server
+admin_packages:
+  - tmux_2.3-4_amd64.deb
+  - nmon_16f+debian-0.1_amd64.deb
+  - pssh_2.3.1-1_all.deb
+remote_package_dir: /d01/packages
+nfs_dir: /d01/nfs

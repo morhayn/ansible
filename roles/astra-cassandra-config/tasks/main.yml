@@ -1,0 +1,54 @@
+---
+- name: Create directory for cassandra db and logs
+  ansible.builtin.file:
+    path: "{{ cassandra_work_dir }}/{{ item }}"
+    owner: "{{ cassandrauser }}"
+    group: "{{ cassandrauser }}"
+    mode: "0755"
+    state: directory
+  loop:
+    - commitlog
+    - data
+    - save_caches
+- name: Update limits for user {{ cassandrauser }}
+  community.general.pam_limits:
+    domain: "{{ cassandrauser }}"
+    limit_type: "{{ item.type }}"
+    limit_item: "{{ item.item }}"
+    value: "{{ item.value }}"
+  loop:
+    - { type: "-", item: "memlock", value: "unlimited" }
+    - { type: "-", item: "nofile", value: "100000" }
+    - { type: "-", item: "as", value: "unlimited" }
+    - { type: "-", item: "nproc", value: "8096" }
+- name: Reload sysctl
+  ansible.builtin.copy:
+    content: |
+        vm.max_map_count = 1048575
+        net.ipv4.tcp_keepalive_time = 300
+    dest: /etc/sysctl.d/cassandra.conf
+    mode: 0644
+- name: Copy backup config files cassandre
+  ansible.builtin.copy:
+    src: "{{ cassandra_conf_dir }}/{{ item }}"
+    dest: "{{ cassandra_conf_dir }}/{{ item }}.orig"
+    mode: 0644
+    remote_src: true
+    force: false
+  loop:
+    - cassandra.yaml
+    - jvm.options
+- name: Copy config cassandra.yaml
+  ansible.builtin.template:
+    src: cassandra_cluster_config.j2
+    dest: "{{ cassandra_conf_dir }}/cassandra.yaml"
+    mode: 0664
+    owner: root
+    group: "{{ cassandrauser }}"
+- name: Copy config jvm cassandra
+  ansible.builtin.template:
+    src: jvm.options.j2
+    dest: "{{ cassandra_conf_dir }}/jvm.options"
+    mode: 0660
+    owner: root
+    group: "{{ cassandrauser }}"

@@ -1,0 +1,6 @@
+- name: Playbbok for astra first configuration
+  hosts: test-01
+  become: true
+  become_method: sudo
+  roles:
+    - role: astra-init

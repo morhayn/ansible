@@ -1,0 +1,8 @@
+- name: Test memmory
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Debug
+      ansible.builtin.debug: msg="{{ (ansible_facts.memory_mb.real.total / 1024) | int }}"
+    - name: Debug
+      ansible.builtin.debug: msg="{{ groups['kafka'][0] }}"

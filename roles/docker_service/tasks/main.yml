@@ -1,0 +1,13 @@
+---
+- name: Start docker service - {{ docker_name }}
+  community.docker.docker_swarm_service:
+    name: "{{ docker_name }}"
+    image: "{{ docker_image }}"
+    env: "{{ docker_env }}"
+    publish: "{{ docker_ports }}"
+    mounts: "{{ docker_mounts }}"
+    restart_config:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+      window: 120s

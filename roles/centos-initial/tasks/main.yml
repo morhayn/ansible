@@ -1,0 +1,26 @@
+---
+- name: Install libselinux-python
+  ansible.builtin.yum: name="libselinux-python3" state="present"
+- name: Selinux to permissive mode
+  ansible.posix.selinux: policy="targeted" state="permissive"
+- name: Update system
+  ansible.builtin.yum:
+    name: '*'
+    state: latest
+- name: Select time zone
+  community.general.timezone: name="Europe/Moscow"
+- name: Add epel-release
+  ansible.builtin.yum: name=epel-release state="present"
+- name: Install package
+  ansible.builtin.yum:
+    name:
+      - vim
+      - net-tools
+      - htop
+      - wget
+      - curl
+      - mc
+      - bash-completion
+      - yum-utils
+      - python3
+    state: present

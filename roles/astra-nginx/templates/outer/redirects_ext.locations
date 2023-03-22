@@ -1,0 +1,12 @@
+
+  location /proxy/map/ {
+      return 404;
+      access_log  /var/log/nginx/access_redirects.log main;
+  }
+
+{% for redirect in redirets %}
+  location {{ redirect.path }} {
+      proxy_pass {{ redirect.url }}; 
+      access_log  /var/log/nginx/access_redirects.log main;
+  }
+{% endfor %}

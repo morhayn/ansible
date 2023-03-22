@@ -1,0 +1,14 @@
+- name: Test nginx vars
+  hosts: localhost
+  vars:
+    group_tomcat: portal_int
+  tasks:
+    - name: Group to vars tomcat instance
+      ansible.builtin.set_fact:
+        wars: "{{ mods | default([]) + [{ 'host': item, 'instance': hostvars[item].instance }] }}"
+      loop: "{{ groups[group_tomcat] }}"
+    - name: Rebuild array to config nginx
+      ansible.builtin.set_fact:
+        mod_nginx: "{{ mods | filtermod }}"
+    - name: Debug 
+      ansible.builtin.debug: msg="{{ mod_nginx }}"/

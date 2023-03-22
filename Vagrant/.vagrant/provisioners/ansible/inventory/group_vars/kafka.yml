@@ -1,0 +1,11 @@
+kXMS: 1g
+kXMX: 2g
+zooXMS: 1g
+zooXMX: 1g
+kafka_port: 9092
+kafka_test_username: kafkauser
+kafka_test_password: pass00
+kafka_password: pass111
+kafka_username: "admin"
+zoo_username: "zoo"
+zoo_password: "pass111"

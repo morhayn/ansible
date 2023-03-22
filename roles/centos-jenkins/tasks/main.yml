@@ -1,0 +1,39 @@
+---
+- name: Create Directory d01
+  ansible.builtin.file: path='/d01' state=directory mode='0775'
+- name: Create Directory for docker
+  ansible.builtin.file: path="{{ item }}" state=directory mode='0775' owner=1000 group=1000
+  loop:
+    - /d01/nginx
+    - /d01/jenkins
+    - /d01/registry
+    - /d01/nginx
+    - /d01/nginx/conf.d
+    - /var/log/nginx
+    - /var/log/jenkins
+- name: Create Directory for nexus
+  ansible.builtin.file: path="{{ item }}" state=directory mode='0755' owner=200 group=root
+  loop:
+    - /d01/nexus
+    - /d01/nexus/nexus-data
+- name: Copy nginx config
+  ansible.builtin.copy: src=nginx.conf dest=/d01/nginx/conf.d/nginx.conf mode='0744'
+- name: Docker swarm init
+  community.docker.docker_swarm: dispatcher_heartbeat_period=5 state=present
+- name: Copy docker-compose file
+  ansible.builtin.copy: src=docker-comp.yml dest=/d01/docker-comp.yml mode='0644'
+- name: Start Stack CiCd
+  community.docker.docker_stack:
+    state: present
+    name: cicd
+    compose:
+      - /d01/docker-comp.yml
+- name: Displey Message
+  ansible.builtin.debug:
+    msg: |
+      - Login to Jenkins and set user and pass
+      - Chenge url jenkins http://IP_address/jenkins
+      - Create ssh key for agent and git
+      - Create two credential for ssh connection
+      - Add node agent
+      - Check git fetch from git
