@@ -1,4 +1,33 @@
 #!/usr/bin/python
+'''
+Filter modify input array:
+--------------------
+[
+server1:
+  mops:
+   - module1.war
+   - module2.war
+server2:
+  mods:
+   - module1.war
+   - module3.war
+   - module4.war
+]
+
+in Output array:
+-------------
+[
+  - upstream: upstream1
+    servers: [server1, server2]
+    mods: [module1]
+  - upstream: upstream2
+    servers: [server1]
+    mods: [module2]
+  - upstream: upstream3
+    servers: [server2]
+    mods: [module3, module4]
+]
+'''
 def filtermod(things):
 #   seen = set()
   my_things = []
