@@ -38,4 +38,4 @@ def filtermod(things):
 
 class FilterModule(object):
     def filters(self):
-        return { 'filterwar': filtermod }
+        return { 'filtermod': filtermod }
