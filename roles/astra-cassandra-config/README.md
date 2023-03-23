@@ -1,11 +1,11 @@
-cassandra_work_dir - директория для данных /d01/cassandra
-cassandra_conf_dir - директория для конфигов /etc/cassandra убрать возможно
-cassandra_xms
-cassandra_xmx
-cassandra_cluster_name - имя кластера
-cassandra_data_dir - директория для данных /d01/cassandra/data
-cassandar_commitlog_dir - /d01/cassandra/commitlog
-cassandra_cache_dir - /d01/cassandra/cache
+cassandra_work_dir - cassandra working directory. example: `/d01/cassandra`
+cassandra_conf_dir - config directory. example:  `/etc/cassandra` not used
+cassandra_xms - config memory java box. example: `1M` 
+cassandra_xmx - config memmory java box. example: `4M`
+cassandra_cluster_name - cluster name. example: `cluster01`
+cassandra_data_dir - database directory. example: `/d01/cassandra/data`
+cassandar_commitlog_dir - cassandra loggs directory. example: `/d01/cassandra/commitlog`
+cassandra_cache_dir - cassandra cache directory. example:  `/d01/cassandra/cache`
 cassandra_seeds - 
-cassandra_port - 9042
+cassandra_port - cassandra port for inputs. example: `9042`
 
