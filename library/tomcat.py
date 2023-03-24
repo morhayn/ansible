@@ -41,46 +41,49 @@ RETURN = r'''
 '''
 
 import requests
+from requests.auth import HTTPBasicAuth
 from ansible.module_utils.basic import AnsibleModule
 
-def list_tomcat():
-    '''
+'''
     List tomcat modules and status
-    '''
-    out_list = requests.get('http://localhost:8080/manager/test/list', timeout=2)
-    if out_list == "":
-        return ""
+'''
+def list_tomcat(name, port, auth):
+    war = {}
+    out_list = requests.get(f"http://localhost:{port}/manager/test/list", auth=auth, timeout=2)
     for line in out_list:
         sp_line = line.split(':')
         if len(sp_line) > 1:
-            name = sp_line[0]
-            status = sp_line[3]
-        # out_lines = out_list.rstrip('\n')
+            war_name = sp_line[0].replace("/", "", 1) 
+            if name == war_name:
+                war['name'] = sp_line[0]
+                war['status'] = sp_line[1]
+    return war
 
-
-def restart():
-    '''
+'''
     Stop tomcat module
     Start tomcat module
-    '''
-    out_stop = requests.get('http://localhost:8080/manager/stop?path=/example')
-    if out_stop == "":
+'''
+def restart(port, name, auth):
+    out_stop = requests.get(f"http://localhost:{port}/manager/stop?path=/{name}", auth=auth)
+    if out_stop == "" or not out_stop.startswith("OK"):
         return False
-    out_start = requests.get('http://localhost:8080/manager/start?path=/example')
-    if out_start == "":
+    out_start = requests.get(f"http://localhost:{port}/manager/start?path=/{name}", auth=auth)
+    if out_start == "" or not out_start.startswith("OK"):
         return False
+    return True
 
-def deploy():
-    '''
+'''
     Undeploy tomcat module
     Deploy tomcat module
-    '''
-    out_undep = requests.get('http://localhost:8080/manager/text/undeploy?path=/example')
-    if out_undep == "":
+'''
+def deploy(port, name, auth):
+    out_undep = requests.get(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth=auth)
+    if out_undep == "" or not out_undep.startswith("OK"):
         return False
-    out_dep = requests.get('http://localhost:8080/manager/text/deploy?war=bar.war')
-    if out_dep == "":
+    out_dep = requests.get(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth=auth)
+    if out_dep == "" or not out_dep.startswith("OK"):
         return False
+    return True
 
 
 def run_module():
@@ -103,12 +106,23 @@ def run_module():
     )
     if module.check_mode:
         module.exit_json(**result)
-    result['original_message'] = module.params['name']
-    result['message'] = 'goodbay'
-    if module.params['new']:
-        result['changed'] = True
-    if module.params['name'] == 'fail me':
-        module.fail_json(msg='You requested this to fail', **result)
+    auth = HTTPBasicAuth(module.params['username'], module.params['password'])
+    tomcat_war = list_tomcat(module.params['name'], module.params['port'], auth)
+    # Check war module exists
+    if tomcat_war:
+        '''
+        check state and chouse use functions
+        call function
+        check status tomcat module
+        check state module with param state
+        '''
+
+    # result['original_message'] = module.params['name']
+    # result['message'] = 'goodbay'
+    # if module.params['new']:
+        # result['changed'] = True
+    # if module.params['name'] == 'fail me':
+        # module.fail_json(msg='You requested this to fail', **result)
     module.exit_json(**result)
 
 def main():
