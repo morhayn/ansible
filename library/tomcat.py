@@ -25,15 +25,15 @@ tasks:
     tomcat:
       name: example
       port: 8080
-      user: tomuser
-      pass: tompass
+      username: tomuser
+      password: tompass
       state: restarted
   - name: Redeploy module
     tomcat:
       name: example
       port: 8080
-      user: tomuser
-      pass: tompass
+      username: tomuser
+      password: tompass
       state: redeploy
   state = restarted/started/stopped/redeploy
 '''
@@ -47,7 +47,16 @@ def list_tomcat():
     '''
     List tomcat modules and status
     '''
-    out_list = requests.get('http://localhost:8080/manager/test/list')
+    out_list = requests.get('http://localhost:8080/manager/test/list', timeout=2)
+    if out_list == "":
+        return ""
+    for line in out_list:
+        sp_line = line.split(':')
+        if len(sp_line) > 1:
+            name = sp_line[0]
+            status = sp_line[3]
+        # out_lines = out_list.rstrip('\n')
+
 
 def restart():
     '''
@@ -55,21 +64,33 @@ def restart():
     Start tomcat module
     '''
     out_stop = requests.get('http://localhost:8080/manager/stop?path=/example')
+    if out_stop == "":
+        return False
     out_start = requests.get('http://localhost:8080/manager/start?path=/example')
+    if out_start == "":
+        return False
 
 def deploy():
     '''
     Undeploy tomcat module
     Deploy tomcat module
     '''
-    out_udep = requests.get('http://localhost:8080/manager/text/undeploy?path=/example')
+    out_undep = requests.get('http://localhost:8080/manager/text/undeploy?path=/example')
+    if out_undep == "":
+        return False
     out_dep = requests.get('http://localhost:8080/manager/text/deploy?war=bar.war')
+    if out_dep == "":
+        return False
 
 
 def run_module():
     module_args = dict(
         name=dict(type='str', required=True),
-        new=dict(type='bool', required=False, default=False)
+        username=dict(type='str', required=True),
+        password=dict(type='str', required=True),
+        state=dict(type='str', required=True),
+        port=dict(type='str', required=False, default="8080"),
+        new=dict(type='bool', required=False, default=False),
     )
     result = dict(
         changed=False,
