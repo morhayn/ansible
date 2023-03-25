@@ -3,6 +3,7 @@
 Vagrant - config vagrant for simple test apnsible playbooks
 
 filter_plugin - my filter for convert list tomcat modules in configure nginx streams
+
 library - my module for start/stop/redeploy tomcat wars
 
 ------------------------------------
