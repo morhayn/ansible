@@ -45,7 +45,7 @@ from requests.auth import HTTPBasicAuth
 from ansible.module_utils.basic import AnsibleModule
 
 '''
-    List tomcat modules and status
+    Find war module exists and get state module
 '''
 def list_tomcat(name, port, auth):
     war = {}
@@ -63,14 +63,16 @@ def list_tomcat(name, port, auth):
     Stop tomcat module
     Start tomcat module
 '''
-def restart(port, name, auth):
-    out_stop = requests.get(f"http://localhost:{port}/manager/stop?path=/{name}", auth=auth)
+def stop_start(port, name, state, auth):
+    out_stop = requests.get(f"http://localhost:{port}/manager/{state}?path=/{name}", auth=auth)
     if out_stop == "" or not out_stop.startswith("OK"):
         return False
-    out_start = requests.get(f"http://localhost:{port}/manager/start?path=/{name}", auth=auth)
-    if out_start == "" or not out_start.startswith("OK"):
-        return False
     return True
+# def start
+    # out_start = requests.get(f"http://localhost:{port}/manager/start?path=/{name}", auth=auth)
+    # if out_start == "" or not out_start.startswith("OK"):
+        # return False
+    # return True
 
 '''
     Undeploy tomcat module
@@ -106,13 +108,28 @@ def run_module():
     )
     if module.check_mode:
         module.exit_json(**result)
+    port = module.params['port']
+    name = module.params['name']
     auth = HTTPBasicAuth(module.params['username'], module.params['password'])
-    tomcat_war = list_tomcat(module.params['name'], module.params['port'], auth)
+    tomcat_war = list_tomcat(name, port, auth)
     # Check war module exists
+    ok = True
     if tomcat_war:
+        state = module.params['state']
+        if state == "started":
+            if tomcat_war['state'] != "running":
+                ok = stop_start(port, name, "start", auth)
+        elif state == "stopped":
+            if tomcat_war['state'] == "running":
+                ok = stop_start(port, name, "stop", auth)
+        elif state == "restarted":
+            if tomcat_war['state'] == "running":
+                ok = stop_start(port, name, "stop", auth)
+            if ok:
+                ok = stop_start(port, name, "start", auth)
+        elif state == "redeploy":
+            ok = deploy(port, name, auth)
         '''
-        check state and chouse use functions
-        call function
         check status tomcat module
         check state module with param state
         '''
