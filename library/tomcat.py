@@ -45,9 +45,18 @@ from requests.auth import HTTPBasicAuth
 from ansible.module_utils.basic import AnsibleModule
 
 '''
+    Check status output tomcat request 
+'''
+def check_out(out):
+    if out == "" or not out.startswith("OK"):
+        return False
+    else:
+        return True
+
+'''
     Find war module exists and get state module
 '''
-def list_tomcat(name, port, auth):
+def status_tomcat(name, port, auth):
     war = {}
     out_list = requests.get(f"http://localhost:{port}/manager/test/list", auth=auth, timeout=2)
     for line in out_list:
@@ -64,10 +73,11 @@ def list_tomcat(name, port, auth):
     Start tomcat module
 '''
 def stop_start(port, name, state, auth):
-    out_stop = requests.get(f"http://localhost:{port}/manager/{state}?path=/{name}", auth=auth)
-    if out_stop == "" or not out_stop.startswith("OK"):
-        return False
-    return True
+    out = requests.get(f"http://localhost:{port}/manager/{state}?path=/{name}", auth=auth)
+    return out
+    # if out_stop == "" or not out_stop.startswith("OK"):
+        # return False
+    # return True
 # def start
     # out_start = requests.get(f"http://localhost:{port}/manager/start?path=/{name}", auth=auth)
     # if out_start == "" or not out_start.startswith("OK"):
@@ -79,13 +89,11 @@ def stop_start(port, name, state, auth):
     Deploy tomcat module
 '''
 def deploy(port, name, auth):
-    out_undep = requests.get(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth=auth)
-    if out_undep == "" or not out_undep.startswith("OK"):
-        return False
-    out_dep = requests.get(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth=auth)
-    if out_dep == "" or not out_dep.startswith("OK"):
-        return False
-    return True
+    out = requests.get(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth=auth)
+    if not check_out(out):
+        return out
+    out = requests.get(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth=auth)
+    return out
 
 
 def run_module():
@@ -93,7 +101,7 @@ def run_module():
         name=dict(type='str', required=True),
         username=dict(type='str', required=True),
         password=dict(type='str', required=True),
-        state=dict(type='str', required=True),
+        state=dict(type='str', choices=['started', 'stopped', 'restarted', 'redeployed']),
         port=dict(type='str', required=False, default="8080"),
         new=dict(type='bool', required=False, default=False),
     )
@@ -111,36 +119,46 @@ def run_module():
     port = module.params['port']
     name = module.params['name']
     auth = HTTPBasicAuth(module.params['username'], module.params['password'])
-    tomcat_war = list_tomcat(name, port, auth)
+    status_war = status_tomcat(name, port, auth)
     # Check war module exists
-    ok = True
-    if tomcat_war:
+    res = {}
+    if status_war:
         state = module.params['state']
+        out = ""
+        state_check = ""
         if state == "started":
-            if tomcat_war['state'] != "running":
-                ok = stop_start(port, name, "start", auth)
+            if status_war['state'] == "stopped":
+                out = stop_start(port, name, "start", auth)
+            state_check = "running"
         elif state == "stopped":
-            if tomcat_war['state'] == "running":
-                ok = stop_start(port, name, "stop", auth)
+            if status_war['state'] == "running":
+                out = stop_start(port, name, "stop", auth)
+            state_check = "stopped"
         elif state == "restarted":
-            if tomcat_war['state'] == "running":
-                ok = stop_start(port, name, "stop", auth)
-            if ok:
-                ok = stop_start(port, name, "start", auth)
-        elif state == "redeploy":
-            ok = deploy(port, name, auth)
-        '''
-        check status tomcat module
-        check state module with param state
-        '''
-
-    # result['original_message'] = module.params['name']
-    # result['message'] = 'goodbay'
-    # if module.params['new']:
-        # result['changed'] = True
-    # if module.params['name'] == 'fail me':
-        # module.fail_json(msg='You requested this to fail', **result)
-    module.exit_json(**result)
+            if status_war['state'] == "running":
+                out = stop_start(port, name, "stop", auth)
+            if check_out(out):
+                out = stop_start(port, name, "start", auth)
+            state_check = "running"
+        elif state == "redeployed":
+            out = deploy(port, name, auth)
+            state_check = "running"
+        status_war = status_tomcat(name, port, auth)
+        res['output'] = out
+        res['name'] = name
+        res['state'] = status_war['state']
+        if check_out(out) and status_war['state'] == state_check:
+            # Ok state war equal wanted
+            module.exit_json(**res)
+        else:
+            # Error state not equal or command run failed
+            if not check_out(out):
+                module.fail_json(msg=f'Error execute requests out: "{out}"', **res)
+            elif status_war['state'] != state_check:
+                module.fail_json(msg=f'State not quals. State war module: {status_war["state"]}', **res)
+        # Error?? 
+        module.fail_json(msg=f'Error  out: {out}, state: {status_war["state"]}', **res)
+    module.fail_json(msg=f'Error get state tomcat module', **res)
 
 def main():
     run_module()
