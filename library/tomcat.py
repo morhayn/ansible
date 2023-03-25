@@ -53,12 +53,28 @@ def check_out(out):
     else:
         return True
 
+def call_request(req, auth):
+    try:
+        out = requests.get(req, auth=auth, timeout=10)
+        if out.status_code != requests.codes.ok:
+            return f'Failed Request status code: {out.status_code}'
+        return out.text
+    # except requests.exceptions.HTTPError as errh:
+        # module.fail_json(msg=f'Error execute requests out: "{out}"' )
+    # except requests.exceptions.ConnectionError as errc:
+        # module.fail_json(msg=f'Error execute requests out: "{out}"',)
+    # except requests.exceptions.Timeout as err:
+        # module.fail_json(msg=f'Error execute requests out: "{out}"', )
+    except requests.exceptions.RequestException as err:
+        return f'Error request: {err}'
+
 '''
     Find war module exists and get state module
 '''
 def status_tomcat(name, port, auth):
     war = {}
-    out_list = requests.get(f"http://localhost:{port}/manager/test/list", auth=auth, timeout=2)
+    # out_list = requests.get(f"http://localhost:{port}/manager/test/list", auth=auth, timeout=2)
+    out_list = call_request(f"http://localhost:{port}/manager/test/list", auth)
     for line in out_list:
         sp_line = line.split(':')
         if len(sp_line) > 1:
@@ -73,7 +89,8 @@ def status_tomcat(name, port, auth):
     Start tomcat module
 '''
 def stop_start(port, name, state, auth):
-    out = requests.get(f"http://localhost:{port}/manager/{state}?path=/{name}", auth=auth)
+    # out = requests.get(f"http://localhost:{port}/manager/{state}?path=/{name}", auth=auth)
+    out = call_request(f"http://localhost:{port}/manager/{state}?path=/{name}", auth)
     return out
     # if out_stop == "" or not out_stop.startswith("OK"):
         # return False
@@ -89,10 +106,10 @@ def stop_start(port, name, state, auth):
     Deploy tomcat module
 '''
 def deploy(port, name, auth):
-    out = requests.get(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth=auth)
+    out = call_request(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth)
     if not check_out(out):
         return out
-    out = requests.get(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth=auth)
+    out = call_request(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth)
     return out
 
 
