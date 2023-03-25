@@ -1,12 +1,22 @@
 inputs vars
 ----------------
-- ntp_pool - сервер времени для синхронизации стенда
-- sources_list - список репозиториев для apt
-- resolv_conf - настройки для resolv
-- fonts_dirs - директория для шрифтов
-- packages - спок пакетов для установки.
-- nfs_dir - директория для монитирования nfs диска
-- remote_package_dir - директория на nfs диске где лежат deb пакеты
-- admin_packages - список пакетов для администрирования
-- domain_project - домен стенда используется при заполнении /etc/hosts файла
-- add_name - дополнительные имена для хоста используется для заполнения /etc/hosts
+- ntp_pool - ntp servers. example: `ntp.debian.org`
+- sources_list - list apt sources. example: 
+```  |
+   deb ftp://127.0.0.1/main smolensk main contrib non-free
+   deb ftp://127.0.0.1/devel smolensk main contrib non-free
+   deb ftp://127.0.0.1/update smolensk main contrib non-free
+   deb ftp://127.0.0.1/update-devel smolensk main contrib non-free
+   ```
+- resolv_conf - dns resolv. example:
+``` |
+  nameserver 8.8.8.8
+  nameserver 1.1.1.1
+```
+- fonts_dirs - fonts directory. see vars/main.yaml
+- packages - list deb packages to install. see vars/main.yml
+- nfs_dir - nfs directory for exchange files. see vars/main.yaml
+- remote_package_dir - directory for deb packages
+- admin_packages - aditional list packages for install. see vars/main.yaml
+- domain_project - domain name project for /etc/hosts 
+- add_name - additional name hosts /etc/hosts

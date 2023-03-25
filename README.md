@@ -19,12 +19,12 @@ Playbooks
 ------------------------------------
 Roles
 ------------------------------------
-- astra-cassandra-config - install cassandra.  file/cassandra.deb and config template/cassandra.j2
-- astra-elastic-conf - install elsactic. file/elastic.deb and confug tamplate/elasticsearch.j2
+- astra-cassandra-config - install cassandra.  config template/cassandra.j2
+- astra-elastic-conf - install elsactic.  config tamplate/elasticsearch.j2
 - astra-influxdb2 - empty 
 - astra-init - initinal system. file - deb packages, vars - list programs
-- astra-kafka - install kafka. file/kafka.deb and configs template/*
-- astra-nginx - install nginx. file/nginx.deb and configs site template/*
+- astra-kafka - install kafka. file/kafka.tgz and configs template/*
+- astra-nginx - install nginx.  configs site template/*
 - astra-openjdk8 - install java openjdk8
 - astra-telegraf - install telegraf. file/telegraf.deb confug template/telegraf.j2
 - centos-initial - initial system centos7
