@@ -5,18 +5,18 @@ __metaclass__=type
 
 DOCUMENTATION = r'''
 ---
-http://localhost:8080/manager/text/list
++ http://localhost:8080/manager/text/list
 http://localhost:8080/manager/text/reload?path=/example
 http://localhost:8080/manager/text/serverinfo
 http://localhost:8080/manager/text/threaddump
 http://localhost:8080/manager/text/vminfo
 http://localhost:8080/manager/text/sessions?path=/example
 
-http://localhost:8080/manager/text/start?path=/example
-http://localhost:8080/manager/text/stop?path=/example
++ http://localhost:8080/manager/text/start?path=/example
++ http://localhost:8080/manager/text/stop?path=/example
 
-http://localhost:8080/manager/text/undeploy?path=/example
-http://localhost:8080/manager/text/deploy?war=bar.war
++ http://localhost:8080/manager/text/undeploy?path=/example
++ http://localhost:8080/manager/text/deploy?war=bar.war
 
 '''
 EXAMPLES = r'''
@@ -38,6 +38,9 @@ tasks:
   state = restarted/started/stopped/redeploy
 '''
 RETURN = r'''
+    'output': output get reguest command
+    'name': name tomcat wars 
+    'state': /running/stopped/ state tomcat war after execute request command
 '''
 
 import requests
@@ -92,14 +95,6 @@ def stop_start(port, name, state, auth):
     # out = requests.get(f"http://localhost:{port}/manager/{state}?path=/{name}", auth=auth)
     out = call_request(f"http://localhost:{port}/manager/{state}?path=/{name}", auth)
     return out
-    # if out_stop == "" or not out_stop.startswith("OK"):
-        # return False
-    # return True
-# def start
-    # out_start = requests.get(f"http://localhost:{port}/manager/start?path=/{name}", auth=auth)
-    # if out_start == "" or not out_start.startswith("OK"):
-        # return False
-    # return True
 
 '''
     Undeploy tomcat module
@@ -120,7 +115,6 @@ def run_module():
         password=dict(type='str', required=True),
         state=dict(type='str', choices=['started', 'stopped', 'restarted', 'redeployed']),
         port=dict(type='str', required=False, default="8080"),
-        new=dict(type='bool', required=False, default=False),
     )
     result = dict(
         changed=False,
