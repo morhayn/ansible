@@ -100,10 +100,10 @@ def stop_start(port, name, state, auth):
     Undeploy tomcat module
     Deploy tomcat module
 '''
-def deploy(port, name, auth):
+def undeploy(port, name, auth):
     out = call_request(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth)
-    if not check_out(out):
-        return out
+    return out
+def deploy(port, name, auth):
     out = call_request(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth)
     return out
 
@@ -133,7 +133,7 @@ def run_module():
     status_war = status_tomcat(name, port, auth)
     # Check war module exists
     res = {}
-    if status_war:
+    if status_war or state == "redeployed":
         state = module.params['state']
         out = ""
         state_check = ""
@@ -152,7 +152,10 @@ def run_module():
                 out = stop_start(port, name, "start", auth)
             state_check = "running"
         elif state == "redeployed":
-            out = deploy(port, name, auth)
+            if status_war:
+                out = undeploy(port, name, auth)
+                if check_out(out):
+                    out = deploy(port, name, auth)
             state_check = "running"
         status_war = status_tomcat(name, port, auth)
         res['output'] = out
