@@ -98,11 +98,14 @@ def stop_start(port, name, state, auth):
 
 '''
     Undeploy tomcat module
-    Deploy tomcat module
 '''
 def undeploy(port, name, auth):
     out = call_request(f"http://localhost:{port}/manager/text/undeploy?path=/{name}", auth)
     return out
+
+'''
+    Deploy tomcat module
+'''
 def deploy(port, name, auth):
     out = call_request(f"http://localhost:{port}/manager/text/deploy?war={name}.war", auth)
     return out
